@@ -1,0 +1,35 @@
+pipeline {
+   environment {
+registry = "NourhenAllagui/timesheetpp"
+registryCredential = 'DockerCredentials'
+dockerImage = '' }
+    agent any
+stages {
+stage("Cloning Project from Git") {
+steps { 
+git branch: 'Nourhen', credentialsId: 'GitCredentials', url: 'https://github.com/NourhenAllagui/DEVOPS.git'
+}
+}
+stage("Build") {
+steps {
+dir("TimesheetProject"){
+bat "mvn compile"}
+}}
+stage("Clean- Package"){
+steps {
+dir("TimesheetProject"){
+bat "mvn clean package -DskipTests"}
+}}
+stage('Docker : Build image') {
+steps {
+   dir("TimesheetProject"){
+script {
+   dockerImage = docker.build registry}}}}
+stage('Docker : Push image') {
+steps {
+   dir("TimesheetProject"){
+script {
+docker.withRegistry( '', registryCredential ) {
+   dockerImage.push()}}}}}
+}
+}
